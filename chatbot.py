@@ -20,6 +20,7 @@ html = html_bytes.decode("utf-8")
 bs = BeautifulSoup(html, features = "html.parser")
 
 
+
 def get_drugs_from_table():
     drug_list = []
     # divide the different tables
@@ -32,7 +33,6 @@ def get_drugs_from_table():
 
     for row in chem_table.select('tr:has(a)'):
         drug_list.append(row.find('a').text)
-
 
     for row in herbs_table.select('tr:has(a)'):
         drug_list.append(row.find('a').text)
@@ -202,6 +202,21 @@ def fill_responses_dict():
 
     return responses
 
+kw_dict = build_intents_dict(get_synonyms(get_drugs_from_table()))
+resp = fill_responses_dict()
+
+def get_response(msg):
+    matched_intent = None
+    for intent, pattern in kw_dict.items():
+        if re.search(pattern, msg):
+            matched_intent = intent
+
+    key='fallback'
+
+    if matched_intent in resp:
+        key = matched_intent  
+
+    return resp[key]
 
 if __name__ == "__main__":
 #    print(hardcoded_list())
@@ -212,24 +227,21 @@ if __name__ == "__main__":
  #   print(fill_responses_dict())
 
  # initialize our chatbot with responses
-    kw_dict = build_intents_dict(get_synonyms(get_drugs_from_table()))
-    resp = fill_responses_dict()
-    resp['fallback'] = "Our database doesn't know that one yet! Try again later."
 
-    print("What drug are you curious about?")
+    resp['fallback'] = "Our database doesn't know that one yet! Try again later."
+    resp['i love you'] = "I don't love you, but I love drug safety!"
+
+    print("What drug are you curious about?[type 'quit' to exit]")
     while(True):
         user_input = input().lower()
         if user_input == 'quit':
             print("thanks for chatting! practice safe drug use :)")
             break
-        matched_intent = None
-        for intent, pattern in kw_dict.items():
-            if re.search(pattern, user_input):
-                matched_intent = intent
-        key='fallback'
-        if matched_intent in resp:
-            key = matched_intent
-        print(resp[key])
-
-
-
+ #       matched_intent = None
+ #       for intent, pattern in kw_dict.items():
+  #          if re.search(pattern, user_input):
+  #              matched_intent = intent
+  #      key='fallback'
+  #      if matched_intent in resp:
+   #         key = matched_intent
+        print(get_response(user_input))
